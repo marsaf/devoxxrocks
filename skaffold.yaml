@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/marsaf/devoxxrocks:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/marsaf/devoxxrocks:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: devoxxrocks
+        chartPath: charts/devoxxrocks
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/marsaf/devoxxrocks'
+          image.tag: '{{.DIGEST_HEX}}'
